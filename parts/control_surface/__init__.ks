@@ -98,24 +98,3 @@ FUNCTION ControlSurfaceMap {
 
     return SELF.
 }
-
-// local t is ControlSurfaceMap().
-// print t:inheritance.
-// //  print t[0]:suffixnames.
-
-// print "========ALL==========".
-// t[0]:lock().
-// print t[0]:locked.
-
-// print "========YAW==========".
-// t[0]:lock("yaw").
-// print t[0]:locked.
-
-// print "========PITCH==========".
-// t[0]:lock("pitch").
-// print t[0]:locked.
-
-// print "========ROLL==========".
-// t[0]:lock("roll").
-// print t[0]:locked.
-

@@ -25,11 +25,10 @@ FUNCTION SynchronizedRotorSerivce {
             SET SELF:actionGroupCache:ag10 to AG10.
         }
         if offset <> 0 {
-            SET SELF:rotorMap:angleDeltaStrength to max(min(SELF:rotorMap:angleDeltaStrength + offset, 1.0), 0).
+            SET SELF:rotorMap:angleDeltaStrength to max(min(SELF:rotorMap:angleDeltaStrength + offset, 1.0), .25).
             SELF:eventBus:fire1(
-                SELF:eventBus,
                 EVENT_ROTOR_ANGLE_DELTA_STRENGTH_CHANGE,
-                (SELF:rotorMap:angleDeltaStrength * 100):tostring()
+                (SELF:rotorMap:angleDeltaStrength * 100)
             ).
         }
     }.
@@ -58,13 +57,10 @@ FUNCTION SynchronizedRotorSerivce {
 
         if SELF:actionGroupCache:ag1 <> AG1 {
            SET SELF:actionGroupCache:ag1 to AG1.
-           // Refactor w/ events?
            SELF:eventBus:fire1(
-                SELF:eventBus,
                 EVENT_VTOL_CONTROLS_ENABLED_CHANGE,
                 (AG1 = false):tostring()
            ).
-           // update_vtol_ctrls_readout(AG1:tostring() = false).
         }
 
         if pitchInput <> 0 and lockCheckTick <> 0 {

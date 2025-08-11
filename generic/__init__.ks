@@ -1,3 +1,1 @@
-// GLOBAL generic is Lexicon(
-//     "event_bus", 
-// )
+// @TODO Add namespace setup

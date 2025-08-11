@@ -1,4 +1,5 @@
 RUN "0:/generic/event_bus.ks".
+RUN "0:/generic/progress_bar.ks".
 RUN "0:/parts/__init__.ks".
 RUN "0:/programs/osprey/constants.ks".
 RUN "0:/programs/osprey/services/rotor_service.ks".
@@ -18,13 +19,6 @@ FUNCTION update {
     SET uiService:eventBus to eb.
     SET synchRotorservice:eventBus to eb.
     SET synchCtrlSurfaceService:eventBus to eb.
-    // LOCAL x to synchRotorservice:rotorMap:rotors[0].
-    // print "event bus check: " + eb:events:length. 
-    // print "event bus check: " + x:typename.
-    // print "event bus check: " + uiService:eventBus:events:keys:length.
-    // print "event bus check: " + synchRotorservice:eventBus:events:keys:length.
-    // print eb:events[EVENT_ROTOR_ANGLE_CHANGE][0]:typename.
-    // eb:events[EVENT_ROTOR_ANGLE_CHANGE][0](x).
 
     LOCAL physicsTick to 0.
     UNTIL FALSE {
@@ -51,13 +45,6 @@ FUNCTION main {
     CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
 
     // Setup
-    LOCAL EVENT_BUS to EventBus().
-    EVENT_BUS:register(EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, LIST(UPDATE_CTRL_SURFACES_LOCK_STATUS_READOUT)).        
-    EVENT_BUS:register(EVENT_ROTOR_ANGLE_DELTA_STRENGTH_CHANGE, LIST(UPDATE_ROTOR_ANGLE_DELTA_STRENGTH_READOUT)).
-    EVENT_BUS:register(EVENT_ROTOR_ANGLE_CHANGE, LIST(UPDATE_ROTOR_ANGLE_READOUT)).
-    EVENT_BUS:register(EVENT_ROTOR_LOCK_STATUS_CHANGE, LIST(UPDATE_ROTOR_LOCK_STATUS_READOUT)).
-    EVENT_BUS:register(EVENT_VTOL_CONTROLS_ENABLED_CHANGE, LIST(UPDATE_VTOL_CTRLS_READOUT)).
-
     LOCAL ROTOR_MAP           to PARTS:ROTOR:ShipRotorMap().
     LOCAL CONTROL_SURFACE_MAP to PARTS:CONTROL_SURFACES:ControlSurfaceMap().
     LOCAL ACTION_GROUP_CACHE  to Lexicon(
@@ -73,7 +60,22 @@ FUNCTION main {
         "ag10", AG10
     ).
     SET NUMBER_OF_ROTORS      to LEX("value", ROTOR_MAP:length).
+    
+    local rotorAngleDeltaStrengthProgressBar to ProgressBar(
+        (NUMBER_OF_ROTORS:value * 2 ) + HEADER_OFFSET + 7,
+        27, 
+        16,
+        100
+    ).
 
+    LOCAL EVENT_BUS to EventBus().
+    EVENT_BUS:register(EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, LIST(UPDATE_CTRL_SURFACES_LOCK_STATUS_READOUT)).        
+    EVENT_BUS:register(EVENT_ROTOR_ANGLE_DELTA_STRENGTH_CHANGE, LIST(rotorAngleDeltaStrengthProgressBar:update)).
+    EVENT_BUS:register(EVENT_ROTOR_ANGLE_CHANGE, LIST(UPDATE_ROTOR_ANGLE_READOUT)).
+    EVENT_BUS:register(EVENT_ROTOR_LOCK_STATUS_CHANGE, LIST(UPDATE_ROTOR_LOCK_STATUS_READOUT)).
+    EVENT_BUS:register(EVENT_VTOL_CONTROLS_ENABLED_CHANGE, LIST(UPDATE_VTOL_CTRLS_READOUT)).
+
+    // Services
     LOCAL rotorSvc to SynchronizedRotorSerivce(
         ROTOR_MAP,
         ROTOR_MAP:rotors[0],
@@ -84,9 +86,16 @@ FUNCTION main {
         CONTROL_SURFACE_MAP,
         ACTION_GROUP_CACHE,
         EVENT_BUS
-    ).    
+    ).
+
     LOCAL uiSvc to TerminalService(
-        ConsoleUITemplate(ROTOR_MAP, SETUP_READOUT),
+        ConsoleUITemplate(
+            LEX(
+                "rotorMap", ROTOR_MAP,
+                "rotorAngleStrengthProgressBar", rotorAngleDeltaStrengthProgressBar
+            ), 
+            SETUP_READOUT
+        ),
         EVENT_BUS
     ):initApp().
 

@@ -14,7 +14,7 @@ FUNCTION SynchronizedControlSurfaceSerivce {
             for ctrlSurface in SELF:ctrlSurfaceMap:ctrlSurfaces {
                 ctrlSurface:lock().
             }
-            SELF:eventBus:fire1(SELF:eventBus, EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, "pitch, yaw, roll").
+            SELF:eventBus:fire1(EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, "pitch, yaw, roll").
             SET SELF:actionGroupCache:ag2 to AG2.
         }
 
@@ -22,7 +22,7 @@ FUNCTION SynchronizedControlSurfaceSerivce {
             for ctrlSurface in SELF:ctrlSurfaceMap:ctrlSurfaces {
                 ctrlSurface:unlock().
             }
-            SELF:eventBus:fire1(SELF:eventBus, EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, "false").
+            SELF:eventBus:fire1(EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE, "false").
             SET SELF:actionGroupCache:ag3 to AG3.
         }
     }.

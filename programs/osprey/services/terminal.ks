@@ -1,11 +1,12 @@
 RUN "0:/programs/osprey/constants.ks".
 LOCAL START to TIME:seconds.
 
+
 FUNCTION _setup_readout {
-    parameter rotorMap.
+    parameter data.
 
     // rotor settings are shared for this program so we just use the first rotor for stuffz
-    LOCAL mainRotor to rotorMap:rotors[0].
+    LOCAL mainRotor to data:rotorMap:rotors[0].
 
     SET TERMINAL:WIDTH TO 120.
     SET TERMINAL:height TO 50.
@@ -15,16 +16,14 @@ FUNCTION _setup_readout {
     ).
     PRINT UI_HEADER_ROW.
     PRINT "|Engine Angles:                             |".
-    FOR _rotor in rotorMap:rotors {
-        // LOCAL rotorLex to rotorMap[rotorKey].
+    FOR _rotor in data:rotorMap:rotors {
         LOCAL angleStr to _rotor:get_target_angle():tostring().
         PRINT "|rotor #" + _rotor:id + ":     {0}°                     |":format(angleStr:substring(0, min(5, angleStr:length)):padleft(7)).
-        // update_rotor_angle_readout(rotorLex, rotorKey). 
     }
 
     print UI_FILLER_ROW.
     print "|Rotors Lock Status:                        |".
-    FOR _rotor in rotorMap:rotors {
+    FOR _rotor in data:rotorMap:rotors {
         PRINT "|rotor #" + _rotor:id + ":     " + 
             _rotor:module:GETFIELD("LOCK"):tostring():padleft(24) + 
             "     |".
@@ -35,7 +34,7 @@ FUNCTION _setup_readout {
     print "|Ctrl Surfaces Locked:            " + AG2:tostring():padleft(5) + "     |".
     print UI_FILLER_ROW.
     print "|Info:                                      |".
-    print "|Rotor Delta Angle Value: " + (rotorMap:angleDeltaStrength * 100):tostring():padleft(5) + "%            |".
+    print "|Rotor Delta Angle Strgth: " + data:rotorAngleStrengthProgressBar:progressBarString + " |".
     print "|Rotor Min Angle: " + mainRotor:settings:minEngineAngle + "°                   |".
     print "|Rotor Max Angle: " + mainRotor:settings:maxEngineAngle + "°                    |".
     
@@ -49,7 +48,6 @@ FUNCTION _setup_readout {
     PRINT "5)  Orient for VTOL take off".
     PRINT "9)  Lower Angle Sensitivity by 25%".
     PRINT "10) Raise Angle Sensitivity by 25%".
-    // PRINT "████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░".
 }.
 SET SETUP_READOUT to _setup_readout@.
 
