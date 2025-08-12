@@ -1,3 +1,10 @@
+FUNCTION __LOAD_ENGINE { 
+    RUN "0:/parts/engine/__init__.ks".
+    return LEX(
+        "EngineMap",             EngineMap@
+    ).
+}.
+
 FUNCTION __LOAD_ROTOR { 
     RUN "0:/parts/rotor/__init__.ks".
     return LEX(
@@ -18,6 +25,7 @@ FUNCTION __LOAD_CONTROL_SURFACES {
 }
 
 GLOBAL PARTS IS LEX(
+    "ENGINE",           __LOAD_ENGINE(),
     "ROTOR",            __LOAD_ROTOR(),
     "CONTROL_SURFACES", __LOAD_CONTROL_SURFACES()
 ).

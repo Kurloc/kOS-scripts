@@ -1,7 +1,6 @@
 RUN "0:/programs/osprey/constants.ks".
 LOCAL START to TIME:seconds.
 
-
 FUNCTION _setup_readout {
     parameter data.
 
@@ -14,7 +13,7 @@ FUNCTION _setup_readout {
     PRINT "[INFO] VTOL Handler boot was completed in {0} seconds":format(
         (TIME:seconds - START):tostring():substring(0, 5)
     ).
-    PRINT UI_HEADER_ROW.
+    PRINT UI_HEADER_FPS_ROW.
     PRINT "|Engine Angles:                             |".
     FOR _rotor in data:rotorMap:rotors {
         LOCAL angleStr to _rotor:get_target_angle():tostring().
@@ -37,7 +36,13 @@ FUNCTION _setup_readout {
     print "|Rotor Delta Angle Strgth: " + data:rotorAngleStrengthProgressBar:progressBarString + " |".
     print "|Rotor Min Angle: " + mainRotor:settings:minEngineAngle + "°                   |".
     print "|Rotor Max Angle: " + mainRotor:settings:maxEngineAngle + "°                    |".
-    
+
+    print UI_FILLER_ROW.
+    print "|Engine Thrust:":padright(44) + "|".
+    for i in range(0, data:engineMap:engines:length) { 
+        print "|Engine #{0}: ":format(i):padright(40) + "{0} |":format(CHOOSE "ON" if data:engineMap:engines[i]:ignition else "OFF"):padleft(5).
+    }
+
     PRINT UI_HEADER_ROW. 
     PRINT "CONTROLS:".
     PRINT "1)  TOGGLE VTOL CONTROL".
@@ -49,25 +54,21 @@ FUNCTION _setup_readout {
     PRINT "9)  Lower Angle Sensitivity by 25%".
     PRINT "10) Raise Angle Sensitivity by 25%".
 }.
-SET SETUP_READOUT to _setup_readout@.
 
 FUNCTION _update_ctrl_surfaces_lock_status_readout {
     parameter lockStatus.
     PRINT (lockStatus:tostring():padleft(16)) AT (23,(NUMBER_OF_ROTORS:value * 2) + HEADER_OFFSET + 4).
 }
-SET UPDATE_CTRL_SURFACES_LOCK_STATUS_READOUT to _update_ctrl_surfaces_lock_status_readout@.
 
 FUNCTION _update_rotor_angle_delta_strength_readout {
     parameter strengthPercent.
     PRINT (strengthPercent:tostring():padleft(5) + "%") AT (25,(NUMBER_OF_ROTORS:value * 2 ) + HEADER_OFFSET + 6).
 }
-SET UPDATE_ROTOR_ANGLE_DELTA_STRENGTH_READOUT to _update_rotor_angle_delta_strength_readout@.
 
 FUNCTION _update_vtol_ctrls_readout {
     parameter lockStatus.
     PRINT (lockStatus:tostring():padleft(19)) AT (20,(NUMBER_OF_ROTORS:value * 2)+ HEADER_OFFSET + 3).
 }
-SET UPDATE_VTOL_CTRLS_READOUT to _update_vtol_ctrls_readout@.
 
 FUNCTION _update_rotor_angle_readout {
     parameter _rotor.
@@ -76,13 +77,28 @@ FUNCTION _update_rotor_angle_readout {
     LOCAL strLength to targetAngleStr:length().
     PRINT (targetAngleStr:substring(0, min(6, strLength)):padleft(7)) AT (15,_rotor:id + HEADER_OFFSET).
 }
-SET UPDATE_ROTOR_ANGLE_READOUT to _update_rotor_angle_readout@.
 
 FUNCTION _update_rotor_lock_status_readout {
     parameter _rotor.
     PRINT (_rotor:locked:tostring():padleft(24)) AT (16, (NUMBER_OF_ROTORS:value * 2) + HEADER_OFFSET + _rotor:id).
 }
-SET UPDATE_ROTOR_LOCK_STATUS_READOUT to _update_rotor_lock_status_readout@.
+FUNCTION _update_engine_ignition_readout { 
+    parameter engineId.
+
+    FUNCTION _inner { 
+        parameter ignition.
+        PRINT "{0} |":format(
+            CHOOSE "ON" 
+            if ignition 
+            else "OFF"
+        ):padleft(5) at (
+            40,
+            (NUMBER_OF_ROTORS:value * 2 ) + HEADER_OFFSET + 12 + engineId
+        ).
+    }
+
+    return _inner@.
+}
 
 FUNCTION ConsoleUITemplate {
     parameter

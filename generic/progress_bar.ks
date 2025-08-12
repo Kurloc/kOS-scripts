@@ -32,8 +32,8 @@ FUNCTION ProgressBar {
         // I hope this avoids more allocs :D
 
         LOCAL blocksToFill is FLOOR(width * (percentFilled / 100)).
-        for i in range(0, SELF:progressBarString:length+ 1) { 
-            if i <= blocksToFill {
+        for i in range(0, SELF:progressBarString:length) { 
+            if i < blocksToFill {
                 PRINT FILLED_BLOCK AT (SELF:startPosition + i, SELF:lineIndex).
             } else { 
                 PRINT EMPTY_BLOCK AT (SELF:startPosition + i, SELF:lineIndex).
@@ -47,11 +47,18 @@ FUNCTION ProgressBar {
 }
 
 // clearscreen.
-// print "Throttle Engine #1: ".
-// print "Throttle Engine #2: ".
-// print "Throttle Engine #3: ".
-// print "Throttle Engine #4: ".
+// print "Throttle Engine #1: ░░░░░░░░░░░░░░░░░░░░".
+// print "Throttle Engine #2: ░░░░░░░░░░░░░░░░░░░░".
+// print "Throttle Engine #3: ░░░░░░░░░░░░░░░░░░░░".
+// print "Throttle Engine #4: ░░░░░░░░░░░░░░░░░░░░".
 // LOCAL pb1 to ProgressBar(0, 20, 20):render():update(10).
 // LOCAL pb2 to ProgressBar(1, 20, 20):render():update(50).
 // LOCAL pb2 to ProgressBar(2, 20, 20):render():update(75).
 // LOCAL pb2 to ProgressBar(3, 20, 20):render():update(100).
+
+
+// Console Becomes this:
+// print "Throttle Engine #1: ██░░░░░░░░░░░░░░░░░░".
+// print "Throttle Engine #2: ██████████░░░░░░░░░░".
+// print "Throttle Engine #3: ███████████████░░░░░".
+// print "Throttle Engine #4: ████████████████████".
