@@ -27,7 +27,7 @@ FUNCTION SynchronizedControlSurfaceSerivce {
         }
     }.
 
-    SELF:ADD("on_update", _on_update).
+    SELF:ADD("onUpdate", _on_update).
 
     return SELF.
 }

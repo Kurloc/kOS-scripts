@@ -41,11 +41,7 @@ FUNCTION Rotor {
 
     // functions
     SELF:ADD("get_target_angle", {
-            LOCAL percentageAlongCurve to (
-                (SELF:desiredAngle - SELF:settings:neutralRotationMin)
-                / SELF:settings:neutralRotaDelta
-            ).
-            return SELF:settings:minEngineAngle + (SELF:settings:neutralRotaTrueDelta * percentageAlongCurve).
+            return -360 + (SELF:desiredAngle * 7.2).
         }
     ).
     SELF:ADD("modulate_vtol_angle", {
@@ -73,14 +69,14 @@ FUNCTION Rotor {
     SELF:ADD("lock_rotor", {
             LOCAL isLocked to SELF:locked.
             if isLocked {
-                return.
+                return false.
             }
 
             LOCAL currentAngle to SELF:module:GETFIELD("current position").
             LOCAL targetAngle to SELF:get_target_angle().
             LOCAL positionDelta to ABS(ABS(targetAngle) - ABS(currentAngle)).
 
-            if positionDelta < 0.15 {
+            if positionDelta < 0.005 {
                 SELF:module:SETFIELD("lock", true).
                 SET SELF:locked to true.
                 return true.
@@ -149,8 +145,9 @@ FUNCTION set_rotors_angles {
             _rotor:modulate_vtol_angle(desiredAngle, absoluteMode).
             _eventBus:fire1(EVENT_ROTOR_ANGLE_CHANGE, _rotor).
         } else { 
-            _rotor:lock_rotor().
-            _eventBus:fire1(EVENT_ROTOR_LOCK_STATUS_CHANGE, _rotor).
+            if _rotor:lock_rotor() { 
+                _eventBus:fire1(EVENT_ROTOR_LOCK_STATUS_CHANGE, _rotor).
+            }
         }
     }
 

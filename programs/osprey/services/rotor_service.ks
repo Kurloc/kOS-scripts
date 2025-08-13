@@ -12,20 +12,30 @@ FUNCTION SynchronizedRotorSerivce {
     SELF:ADD("mainRotor", mainRotor).
     SELF:ADD("eventBus", eventBus).
     SELF:ADD("actionGroupCache", actionGroupCache).
+    
+    for r in SELF:rotorMap:rotors { 
+        r:module:SETFIELD("force", 12.5).
+        r:module:SETFIELD("acceleration", 5).
+        r:module:SETFIELD("max speed", 5.25).
+    }
 
     LOCAL _handle_angle_sensitivity_changes is {
         LOCAL offset to 0.
+        if SELF:actionGroupCache:ag6 <> AG6 {
+            print SELF:rotorMap:rotors[0]:module:GETFIELD("current position").
+            print SELF:rotorMap:rotors[0]:module:GETFIELD("neutral position").
+            SET SELF:actionGroupCache:ag6 to AG6.  
+        }
         if SELF:actionGroupCache:ag9 <> AG9 {
-            SET offset to -.25.
-            SET SELF:actionGroupCache:ag9 to AG9.
-            
+            SET offset to -.05.
+            SET SELF:actionGroupCache:ag9 to AG9.  
         }
         if SELF:actionGroupCache:ag10 <> AG10 {
-            SET offset to .25.
+            SET offset to .05.
             SET SELF:actionGroupCache:ag10 to AG10.
         }
         if offset <> 0 {
-            SET SELF:rotorMap:angleDeltaStrength to max(min(SELF:rotorMap:angleDeltaStrength + offset, 1.0), .25).
+            SET SELF:rotorMap:angleDeltaStrength to max(min(SELF:rotorMap:angleDeltaStrength + offset, 1.0), .0001).
             SELF:eventBus:fire1(
                 EVENT_ROTOR_ANGLE_DELTA_STRENGTH_CHANGE,
                 (SELF:rotorMap:angleDeltaStrength * 100)
@@ -42,14 +52,14 @@ FUNCTION SynchronizedRotorSerivce {
 
     LOCAL _handle_vtol_mode is { 
         if SELF:actionGroupCache:ag5 <> AG5 { 
-            set_rotors_angles(SELF:rotorMap, 50.5, SELF:eventBus, true, true).
+            set_rotors_angles(SELF:rotorMap, ((0 - -360) / 720) * 100, SELF:eventBus, true, true).
             SET SELF:actionGroupCache:ag5 to AG5.
         }
     }.
 
     LOCAL _on_update is { 
         parameter pitchInput, physicsTick.
-        local lockCheckTick to MOD(physicsTick, 5).
+        local lockCheckTick to MOD(physicsTick, 10) <> 0.
 
         _handle_angle_sensitivity_changes().
         _handle_takeoff_mode().
@@ -63,7 +73,8 @@ FUNCTION SynchronizedRotorSerivce {
            ).
         }
 
-        if pitchInput <> 0 and lockCheckTick <> 0 {
+        if pitchInput = 0 and lockCheckTick {
+            // print "SKIPPING FRAME {0} : {1}":format(physicsTick, pitchInput) at (0, 45).
             return.
         }
 
@@ -76,7 +87,7 @@ FUNCTION SynchronizedRotorSerivce {
         ).
     }.
 
-    SELF:ADD("on_update", _on_update).
+    SELF:ADD("onUpdate", _on_update).
 
     return SELF.
 }

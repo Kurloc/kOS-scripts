@@ -82,6 +82,7 @@ FUNCTION _update_rotor_lock_status_readout {
     parameter _rotor.
     PRINT (_rotor:locked:tostring():padleft(24)) AT (16, (NUMBER_OF_ROTORS:value * 2) + HEADER_OFFSET + _rotor:id).
 }
+
 FUNCTION _update_engine_ignition_readout { 
     parameter engineId.
 
@@ -98,6 +99,11 @@ FUNCTION _update_engine_ignition_readout {
     }
 
     return _inner@.
+}
+
+FUNCTION _update_fps_readout { 
+    parameter fps.
+    PRINT "FPS: {0}":format(fps):padleft(7) AT (36, 3).
 }
 
 FUNCTION ConsoleUITemplate {

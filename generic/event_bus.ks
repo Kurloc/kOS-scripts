@@ -2,6 +2,13 @@ FUNCTION EventBus {
     LOCAL SELF to LEX().
     SET SELF["events"] to LEX().
 
+    SELF:ADD("fire", {
+        parameter eventName.
+
+        for delegate in SELF:events[eventName] { 
+            delegate().
+        }
+    }).
     SELF:ADD("fire1", {
         parameter eventName, param1.
 

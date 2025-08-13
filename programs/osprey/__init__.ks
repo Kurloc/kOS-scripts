@@ -46,6 +46,10 @@ FUNCTION __load_engine_ign {
     runOncePath("0:/programs/osprey/services/terminal.ks").
     return _update_engine_ignition_readout@.
 }
+FUNCTION __load_fps_readout {
+    runOncePath("0:/programs/osprey/services/terminal.ks").
+    return _update_fps_readout@.
+}
 
 GLOBAL OSPREY IS LEX(
     "services", LEX(
@@ -62,7 +66,8 @@ GLOBAL OSPREY IS LEX(
                 "ROTOR_ANGLE_DELTA_STRENGTH_READOUT", __load_radsr(),
                 "CTRL_SURFACES_LOCK_STATUS_READOUT", __load_cslsr(),
                 "SETUP_READOUT", __load_setup(),
-                "ENGINE_IGNITION", __load_engine_ign()
+                "ENGINE_IGNITION", __load_engine_ign(),
+                "FPS_READOUT", __load_fps_readout()
             )
         )
     )
