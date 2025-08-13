@@ -7,24 +7,54 @@ FUNCTION TerminalInputService {
     parameter eventBus.
 
     LOCAL SELF to LEX().
-    LOCAL lastChar to "".
+
     SELF:ADD("eventBus", eventBus).
     SELF:ADD("eventKeys", 0).
+    SELF:ADD("keyPressed", -1).
+    SELF:ADD("lastChar", -1).
+    SELF:ADD("deadFrames", 0).
     SELF:ADD("onUpdate", {
         if TERMINAL:input:haschar {
+            SET SELF:deadFrames to 0.
             if SELF:eventKeys = 0 { 
                 SET SELF:eventKeys to SELF:eventBus:events:keys().
             }
 
-            LOCAL keyPressed to TERMINAL:input:getchar().
-            print keyPressed:padright(12) at (0, 45).
-            if SELF:eventKeys:contains(keyPressed) {
-                SELF:eventBus:fire(keyPressed).
+            SET SELF:keyPressed to TERMINAL:input:getchar().
+            if SELF:lastChar <> -1 and SELF:lastChar <> SELF:keyPressed { 
+                // print "Released A: {0}, newChar: {1} AT {2}":format(lastChar, SELF:keyPressed, physicsTick):padright(18) at (0, 47).
+                LOCAL releasedEvent to SELF:keyPressed + "Released".
+                if SELF:eventKeys:contains(releasedEvent) {
+                    SELF:eventBus:fire(releasedEvent).
+                }
             }
-            // @TODO add keyRelease events
 
-            SET lastChar to keyPressed.
+            // print "Pressed {0} at {1}":format(SELF:keyPressed, physicsTick):padright(15) at (0, 46).
+            if SELF:keyPressed = SELF:lastChar {
+                return.
+            }
+
+            if SELF:eventKeys:contains(SELF:keyPressed) {
+                SELF:eventBus:fire(SELF:keyPressed).
+            }
+            SET SELF:lastChar to SELF:keyPressed.
+            return.
         }
+
+
+        SET SELF:deadFrames to SELF:deadFrames + 1.
+        if SELF:deadFrames > 5 {
+            SET SELF:lastChar to -1.
+            SET SELF:deadFrames to 0.
+        }
+        if SELF:lastChar <> -1 { 
+            // print "Released B: {0} on {1} :: {2}":format(lastChar, physicsTick, deadFrames):padright(15) at (0, 48).
+            LOCAL releasedEvent to SELF:keyPressed + "Released".
+            if SELF:eventKeys:contains(releasedEvent) {
+                SELF:eventBus:fire(releasedEvent).
+            }
+        }
+    
     }).
 
     return self.

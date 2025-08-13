@@ -28,8 +28,13 @@ FUNCTION update {
     LOCAL physicsTick to 1.
     LOCAL pitchInput to 0.
 
-    eb:register("w", LIST({SET pitchInput to -1.}, {SET SHIP:CONTROL:PITCH to -1.})).
-    eb:register("s", LIST({SET pitchInput to 1.}, {SET SHIP:CONTROL:PITCH to 1.})).
+    eb:register(" ", LIST(engineService:toggleEngines@)).
+    eb:register("w", LIST({SET pitchInput to -1.},  {SET SHIP:CONTROL:PITCH to -1.})).
+    eb:register("s", LIST({SET pitchInput to  1.},  {SET SHIP:CONTROL:PITCH to  1.})).
+    eb:register("a", LIST({SET SHIP:CONTROL:YAW  to -1.})).
+    eb:register("d", LIST({SET SHIP:CONTROL:YAW  to  1.})).
+    eb:register("q", LIST({SET SHIP:CONTROL:ROLL to -1.})).
+    eb:register("e", LIST({SET SHIP:CONTROL:ROLL to  1.})).
     eb:register("1", LIST({SET AG1 to not AG1.})).
     eb:register("2", LIST({SET AG2 to not AG2.})).
     eb:register("3", LIST({SET AG3 to not AG3.})).
@@ -40,6 +45,9 @@ FUNCTION update {
     eb:register("8", LIST({SET AG8 to not AG8.})).
     eb:register("9", LIST({SET AG9 to not AG9.})).
     eb:register("0", LIST({SET AG0 to not AG0.})).
+    
+    eb:register("wReleased", LIST({SET pitchInput to 0.},  {SET SHIP:CONTROL:PITCH to 0.})).
+    eb:register("sReleased", LIST({SET pitchInput to 0.},  {SET SHIP:CONTROL:PITCH to 0.})).
 
     UNTIL FALSE {
         terminalInputSvc:onUpdate().
@@ -56,8 +64,8 @@ FUNCTION update {
             SET start to TIME:seconds.
         }
         SET physicsTick to physicsTick + 1.
-        SET pitchInput to 0.
-        SET SHIP:CONTROL:PITCH to 0.
+        // SET pitchInput to 0.
+        // SET SHIP:CONTROL:PITCH to 0.
         WAIT UNTIL TRUE.
     }
 }
@@ -119,6 +127,8 @@ FUNCTION main {
         EVENT_BUS
     ).
     LOCAL engineSvc to OSPREY:SERVICES:EngineService(ENGINE_MAP, ACTION_GROUP_CACHE, EVENT_BUS).
+    // @TODO add a service for monitoring ship power capacity and power draw so we can let the user know 
+    // the application will be closing in T-X seconds
     LOCAL terminalInputSvc to TerminalInputService(EVENT_BUS).
     LOCAL uiSvc to OSPREY:SERVICES:TERMINAL:TerminalService(
         ConsoleUITemplate(
@@ -143,7 +153,6 @@ FUNCTION main {
         EVENT_BUS:register(EVENT_ENGINE_THRUST_CHANGE + i, LIST(pb:update)).
         EVENT_BUS:register(EVENT_ENGINE_TOGGLE + i, LIST(OSPREY:SERVICES:TERMINAL:UPDATE:ENGINE_IGNITION(i))).
     }
-    EVENT_BUS:register(" ",                                     LIST(engineSvc:toggleEngines@)).
 
     // PRINT (((-90 - -360) / 720) * 100).
     // PRINT (((0 - -360) / 720) * 100).
