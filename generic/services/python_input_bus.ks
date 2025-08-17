@@ -1,3 +1,5 @@
+// @TODO Optimize string usage as much as possible here
+// @TODO Get this in a function at least so it's not an import bomb waiting to go off.
 LOCAL i to 0.
 
 local keyPress to -1.
