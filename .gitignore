@@ -1,0 +1,4 @@
+*venv*
+*.ksm
+*.idea
+*.vscode
