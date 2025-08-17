@@ -1,70 +1,56 @@
+RUN "0:/programs/osprey/environment.ks".
+
 /// Structs
 FUNCTION RotorSettings {
     parameter 
-        minEngineAngle is -90.75,
-        maxEngineAngle is 90.75
+        minAngle is ROTOR_MIN_ANGLE,
+        maxAngle is ROTOR_MAX_ANGLE
         .
 
     LOCAL self to LEXICON().
-    LOCAL rangeOfRotationDegrees to 720.
-    LOCAL minOfRange to 0 - (rangeOfRotationDegrees / 2).
 
-    LOCAL minimumEngineRotationAngle to -90.750.
-    LOCAL maxEngineRotationAngle to 90.750.
-
-    LOCAL neutralRotationMin to ((minimumEngineRotationAngle - minOfRange) / rangeOfRotationDegrees) * 100.
-    LOCAL neutralRotationMax to ((maxEngineRotationAngle - minOfRange) / rangeOfRotationDegrees) * 100.
-    
-    self:ADD("angleDeltaStrength", 1.0).
-    self:ADD("minEngineAngle", minEngineAngle).
-    self:ADD("maxEngineAngle", maxEngineAngle).
-    self:ADD("neutralRotationMin", neutralRotationMin).
-    self:ADD("neutralRotationMax", neutralRotationMax).
-    self:ADD("neutralRotaDelta", neutralRotationMax - neutralRotationMin).
-    self:ADD("neutralRotaTrueDelta", ABS(minimumEngineRotationAngle - maxEngineRotationAngle)).
+    self:ADD("angleDeltaStrength", 0.125).
+    self:ADD("minAngle", minAngle).
+    self:ADD("maxAngle", maxAngle).
 
     return self.
 }
 
 FUNCTION Rotor {
-    parameter rotorModuleInc, idInc, minEngineAngleInc, maxEngineAngleInc.
+    parameter rotorModuleInc, idInc, minAngleInc, maxAngleInc.
     LOCAL SELF to LEXICON().
 
     // fields
     SELF:ADD("id", idInc).
     SELF:ADD("locked", rotorModuleInc:GETFIELD("lock")).
     SELF:ADD("module", rotorModuleInc).
-    SELF:ADD("invertedDirection", rotorModuleInc:GETFIELD("invert direction")).
-    SELF:ADD("desiredAngle", rotorModuleInc:GETFIELD("neutral position")).
+    SELF:ADD("desiredAngle", rotorModuleInc:GETFIELD("current position")).
     SELF:ADD("clampValue", 0).
-    SELF:ADD("settings", RotorSettings(minEngineAngleInc, maxEngineAngleInc)).
+    SELF:ADD("settings", RotorSettings(minAngleInc, maxAngleInc)).
 
     // functions
-    SELF:ADD("get_target_angle", {
-            return -360 + (SELF:desiredAngle * 7.2).
-        }
-    ).
     SELF:ADD("modulate_vtol_angle", {
         parameter 
             angleOffset,
             absoluteMode is false.
 
-        LOCAL currentPosition to SELF:module:GETFIELD("neutral position").
-        LOCAL invertDirection to SELF:module:GETFIELD("invert direction").
+        LOCAL currentPosition to SELF:module:GETFIELD("current position").
         
-        LOCAL newPosition to min(
-            max(currentPosition + angleOffset, SELF:settings:neutralRotationMin),
-            SELF:settings:neutralRotationMax
+        LOCAL newAngle to min(
+            max(currentPosition + angleOffset, SELF:settings:minAngle),
+            SELF:settings:maxAngle
         ).
+        SET newAngle to currentPosition + angleOffset.
         if absoluteMode { 
-            SET newPosition to angleOffset.
+            SET newAngle to angleOffset.
         }
 
-        SET SELF:invertedDirection to invertDirection.
-        SET SELF:desiredAngle to newPosition.
+        SET SELF:desiredAngle to newAngle.
 
         SELF:unlock_rotor().
-        SELF:module:SETFIELD("neutral position", newPosition).
+        SELF:module:SETFIELD("target position", newAngle).
+        
+        return newAngle.
     }).
     SELF:ADD("lock_rotor", {
             LOCAL isLocked to SELF:locked.
@@ -73,10 +59,9 @@ FUNCTION Rotor {
             }
 
             LOCAL currentAngle to SELF:module:GETFIELD("current position").
-            LOCAL targetAngle to SELF:get_target_angle().
-            LOCAL positionDelta to ABS(ABS(targetAngle) - ABS(currentAngle)).
+            LOCAL positionDelta to ABS(ABS(SELF:desiredAngle) - ABS(currentAngle)).
 
-            if positionDelta < 0.005 {
+            if positionDelta < 0.00375 {
                 SELF:module:SETFIELD("lock", true).
                 SET SELF:locked to true.
                 return true.
@@ -116,20 +101,22 @@ FUNCTION ShipRotorMap {
         SET rotorNumber to rotorNumber + 1.
     }
 
-    SELF:ADD("rotors", rotors).
-    SELF:ADD("angleDeltaStrength", 1.0).
+    SELF:ADD("rotors",             rotors).
+    SELF:ADD("angleDeltaStrength", .125).
+    SELF:ADD("controlsLocked",     ROTOR_CONTROLS_START_LOCKED).
+
     return self.
 }
 
 
 /// Functions
 FUNCTION sync_rotor_angles { 
-        parameter rotorMap, desiredAngle.
+    parameter rotorMap, desiredAngle.
 
-        for _rotor in rotorMap:rotors {
-            _rotor:modulate_vtol_angle(desiredAngle, true).
-        }
+    for _rotor in rotorMap:rotors {
+        _rotor:modulate_vtol_angle(desiredAngle, true).
     }
+}
 
 FUNCTION set_rotors_angles {
     parameter 
@@ -140,19 +127,21 @@ FUNCTION set_rotors_angles {
         doModulation is true
     .
 
+    LOCAL i to 0.
     FOR _rotor in rotor_map:rotors {
         if doModulation {
-            _rotor:modulate_vtol_angle(desiredAngle, absoluteMode).
+            // Keep rotor angles in sync by modulation the lead rotor and applying the same angle to the others
+            if i = 0 { 
+                SET desiredAngle to _rotor:modulate_vtol_angle(desiredAngle, absoluteMode).
+            } else { 
+                _rotor:modulate_vtol_angle(desiredAngle, true).
+            }
             _eventBus:fire1(EVENT_ROTOR_ANGLE_CHANGE, _rotor).
         } else { 
             if _rotor:lock_rotor() { 
                 _eventBus:fire1(EVENT_ROTOR_LOCK_STATUS_CHANGE, _rotor).
             }
         }
+        SET i to i + 1.
     }
-
-    // We probably shouldn't need this to run all the time
-    // if pitchInput <> 0 and AG1 { 
-    //     sync_rotor_angles(rotor_map, desiredAngle).
-    // }
 }

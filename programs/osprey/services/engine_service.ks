@@ -26,10 +26,8 @@ FUNCTION EngineSerivce {
         for i in range(SELF:engineMap:engines:length) { 
             if ignitionState { 
                 SELF:engineMap:engines[i]:shutdown().
-                SET SHIP:CONTROL:PILOTMAINTHROTTLE to 0.
             } else { 
                 SELF:engineMap:engines[i]:activate().
-                SET SHIP:CONTROL:PILOTMAINTHROTTLE to 1.
             }
             SELF:eventBus:fire1(EVENT_ENGINE_TOGGLE + i, not ignitionState).
         }

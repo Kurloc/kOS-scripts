@@ -31,12 +31,17 @@ FUNCTION ProgressBar {
         // Update a progress bar's rendering in place in the terminal w/o doing any string manipulation directly. 
         // I hope this avoids more allocs :D
 
+        LOCAL percString to percentFilled:toString().
         LOCAL blocksToFill is FLOOR(width * (percentFilled / 100)).
         for i in range(0, SELF:progressBarString:length) { 
             if i < blocksToFill {
                 PRINT FILLED_BLOCK AT (SELF:startPosition + i, SELF:lineIndex).
-            } else { 
+            } else {
+                // if i < blocksToFill + percentFilled:toString():length { 
+                    // PRINT percString[i - blocksToFill] AT (SELF:startPosition + i, SELF:lineIndex).
+                // } else { 
                 PRINT EMPTY_BLOCK AT (SELF:startPosition + i, SELF:lineIndex).
+                // }
             }
         }
 
@@ -59,6 +64,6 @@ FUNCTION ProgressBar {
 
 // Console Becomes this:
 // print "Throttle Engine #1: ██░░░░░░░░░░░░░░░░░░".
-// print "Throttle Engine #2: ██████████░░░░░░░░░░".
+// print "Throttle Engine #2: ██████████10%░░░░░░░".
 // print "Throttle Engine #3: ███████████████░░░░░".
 // print "Throttle Engine #4: ████████████████████".

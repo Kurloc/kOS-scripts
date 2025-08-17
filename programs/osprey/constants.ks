@@ -1,8 +1,8 @@
 // Setup Console STDOUT globals
 GLOBAL HEADER_OFFSET to 5.
-GLOBAL UI_HEADER_FPS_ROW to "+-------------+--------------------(FPS: 00)+".
-GLOBAL UI_HEADER_ROW to "+--------------+----------------------------+".
-GLOBAL UI_FILLER_ROW to "|                                           |".
+GLOBAL UI_HEADER_FPS_ROW to "╔══════════════════════════════════(FPS: 00)╗".
+GLOBAL UI_FOOTER_ROW to "╚═══════════════════════════════════════════╝".
+GLOBAL UI_FILLER_ROW to "║                                           ║".
 
 // EVENTS
 GLOBAL EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE to "EVENT_CTRL_SURFACE_LOCK_STATUS_CHANGE".

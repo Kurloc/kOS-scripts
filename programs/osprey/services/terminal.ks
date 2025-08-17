@@ -14,36 +14,36 @@ FUNCTION _setup_readout {
         (TIME:seconds - START):tostring():substring(0, 5)
     ).
     PRINT UI_HEADER_FPS_ROW.
-    PRINT "|Engine Angles:                             |".
+    PRINT "║Engine Angles:                             ║".
     FOR _rotor in data:rotorMap:rotors {
-        LOCAL angleStr to _rotor:get_target_angle():tostring().
-        PRINT "|rotor #" + _rotor:id + ":     {0}°                     |":format(angleStr:substring(0, min(5, angleStr:length)):padleft(7)).
+        LOCAL angleStr to _rotor:desiredAngle:tostring().
+        PRINT "║rotor #" + _rotor:id + ":     {0}°                     ║":format(angleStr:substring(0, min(5, angleStr:length)):padleft(7)).
     }
 
     print UI_FILLER_ROW.
-    print "|Rotors Lock Status:                        |".
+    print "║Rotors Lock Status:                        ║".
     FOR _rotor in data:rotorMap:rotors {
-        PRINT "|rotor #" + _rotor:id + ":     " + 
+        PRINT "║rotor #" + _rotor:id + ":     " + 
             _rotor:module:GETFIELD("LOCK"):tostring():padleft(24) + 
-            "     |".
+            "     ║".
     }
 
     print UI_FILLER_ROW.
-    print "|VTOL CTRLS Locked:               " + (AG1 = false):tostring():padleft(5) + "     |".
-    print "|Ctrl Surfaces Locked:            " + AG2:tostring():padleft(5) + "     |".
+    print "║VTOL CTRLS Locked:               " + data:rotorMap:controlsLocked:tostring():padleft(5) + "     ║".
+    print "║Ctrl Surfaces Locked:            " + AG2:tostring():padleft(5) + "     ║".
     print UI_FILLER_ROW.
-    print "|Info:                                      |".
-    print "|Rotor Delta Angle Strgth: " + data:rotorAngleStrengthProgressBar:progressBarString + " |".
-    print "|Rotor Min Angle: " + mainRotor:settings:minEngineAngle + "°                   |".
-    print "|Rotor Max Angle: " + mainRotor:settings:maxEngineAngle + "°                    |".
+    print "║Info:                                      ║".
+    print "║Rotor Angle Strength: " + data:rotorAngleStrengthProgressBar:progressBarString + " ║".
+    print "║Rotor Min Angle: " + mainRotor:settings:minAngle + "°                   ║".
+    print "║Rotor Max Angle: " + mainRotor:settings:maxAngle + "°                    ║".
 
     print UI_FILLER_ROW.
-    print "|Engine Thrust:":padright(44) + "|".
+    print "║Engine Thrust:":padright(44) + "║".
     for i in range(0, data:engineMap:engines:length) { 
-        print "|Engine #{0}: ":format(i):padright(40) + "{0} |":format(CHOOSE "ON" if data:engineMap:engines[i]:ignition else "OFF"):padleft(5).
+        print "║Engine #{0}: ":format(i):padright(40) + "{0} ║":format(CHOOSE "ON" if data:engineMap:engines[i]:ignition else "OFF"):padleft(5).
     }
 
-    PRINT UI_HEADER_ROW. 
+    PRINT UI_FOOTER_ROW. 
     PRINT "CONTROLS:".
     PRINT "1)  TOGGLE VTOL CONTROL".
     PRINT "    - W/S for control the angle of the engines".
@@ -73,7 +73,7 @@ FUNCTION _update_vtol_ctrls_readout {
 FUNCTION _update_rotor_angle_readout {
     parameter _rotor.
 
-    LOCAL targetAngleStr to _rotor:get_target_angle():tostring().
+    LOCAL targetAngleStr to _rotor:desiredAngle:toString().
     LOCAL strLength to targetAngleStr:length().
     PRINT (targetAngleStr:substring(0, min(6, strLength)):padleft(7)) AT (15,_rotor:id + HEADER_OFFSET).
 }
@@ -88,7 +88,7 @@ FUNCTION _update_engine_ignition_readout {
 
     FUNCTION _inner { 
         parameter ignition.
-        PRINT "{0} |":format(
+        PRINT "{0} ║":format(
             CHOOSE "ON" 
             if ignition 
             else "OFF"
