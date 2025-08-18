@@ -6,10 +6,20 @@ FUNCTION __LOAD_NAME_LABEL {
     RUN "0:/generic/terminal/labels/name_label.ks".
     return NameLabel@.
 }.
+FUNCTION __LOAD_REACTIVE_LABEL { 
+    RUN "0:/generic/terminal/labels/reactive_label.ks".
+    return ReactiveLabel@.
+}.
+FUNCTION __LOAD_FILLER_LABEL { 
+    RUN "0:/generic/terminal/labels/filler_label.ks".
+    return FillerLabel@.
+}.
 
 GLOBAL LABELS IS LEX(
     "Label",           __LOAD_LABEL(),
-    "NameLabel",       __LOAD_NAME_LABEL()
+    "NameLabel",       __LOAD_NAME_LABEL(),
+    "ReactiveLabel",   __LOAD_REACTIVE_LABEL(),
+    "FillerLabel",   __LOAD_FILLER_LABEL()
 ).
 
 

@@ -2,16 +2,16 @@ RUN "0:/generic/terminal/utility.ks".
 RUN "0:/generic/terminal/layouts/base.ks".
 
 FUNCTION VerticalLayout {
-    parameter widgets is List().
+    parameter vWidgets is List().
     
-    LOCAL SELF to Layout(widgets).
-    SET layoutColumn to NEXT_LAYOUT_COLUMN(0). // Vert Layouts don't offset the width stacking
-    SET layoutRow    to NEXT_LAYOUT_ROW(SELF:maxRow - 1).
+    LOCAL SELF_VERTICAL_LAYOUT to Layout(vWidgets).
+    LOCAL layoutColumn to NEXT_LAYOUT_COLUMN(0). // Vert Layouts don't offset the width stacking
+    LOCAL layoutRow    to NEXT_LAYOUT_ROW(SELF_VERTICAL_LAYOUT:maxRow - 1).
 
-    for widget in SELF:widgets {
-        SET widget:col to layoutColumn.
-        SET widget:row to layoutRow + widget:row.
+    for vWidget in SELF_VERTICAL_LAYOUT:widgets {
+        SET vWidget:col to layoutColumn.
+        SET vWidget:row to layoutRow + vWidget:row.
     }
 
-    return SELF.
+    return SELF_VERTICAL_LAYOUT.
 }
